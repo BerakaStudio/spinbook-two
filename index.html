@@ -1,0 +1,211 @@
+<!--SpinBook Main Application HTML-->
+<!--© José Lobos Sanhueza, Beraka Studio, 2025-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpinBook - Reserva de Estudio</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="src/icon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="src/icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="src/icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF desde CDN confiable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles.css">
+</head>
+<body class="bg-black text-white antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-8 md:mb-12">
+            <div class="logotitle">
+                <img id="studio-logo" alt="SpinBook Logo" class="logo">
+                <div class="title">
+                    <h1 id="studio-title" class="text-4xl md:text-5xl font-black tracking-tight text-yellow-400"></h1>
+                    <p class="text-gray-400 mt-2 text-lg">Reserva tu sesión de estudio musical</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="bg-gray-900/50 backdrop-blur-sm rounded-2xl shadow-2xl shadow-yellow-500/10 p-6 md:p-8">
+            <div id="app-content" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Calendar Section -->
+                <div id="calendar-container">
+                    <h2 class="text-2xl font-bold mb-4 text-yellow-400">1. Elige una fecha</h2>
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <button id="prev-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                            </button>
+                            <h3 id="month-year" class="text-xl font-semibold"></h3>
+                            <button id="next-month" class="p-2 rounded-full hover:bg-gray-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                            </button>
+                        </div>
+                        <div id="calendar-grid" class="grid grid-cols-7 gap-1 text-center">
+                            <!-- Calendar days will be injected here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Slots Section -->
+                <div id="slots-container">
+                    <h2 class="text-2xl font-bold mb-4 text-yellow-400">2. Selecciona la hora</h2>
+                    <p id="selected-date-info" class="text-gray-400 mb-4 h-6"></p>
+                    <div id="time-slots" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-12">
+                        <!-- Time slots will be injected here -->
+                    </div>
+                     <div id="slots-loader" class="hidden items-center justify-center h-32">
+                        <div class="loader h-8 w-8 rounded-full border-4 border-gray-700"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Services Section -->
+            <div id="services-container" class="hidden mt-8 pt-8 border-t border-gray-700">
+                <h2 class="text-2xl font-bold mb-4 text-yellow-400">3. Selecciona los servicios</h2>
+                <p class="text-gray-400 mb-6">Elige uno o más servicios que necesitas para tu sesión</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Servicio 1: Producción Musical -->
+                    <div class="service-card bg-gray-800 p-6 rounded-lg border-2 border-gray-600 hover:border-yellow-400 transition-all cursor-pointer transform hover:scale-105" data-service="produccion">
+                        <div class="flex flex-col items-center text-center space-y-4">
+                            <div class="text-yellow-400 text-4xl">🎼</div>
+                            <h3 class="text-white font-semibold text-lg">Producción Musical</h3>
+                            <div class="flex items-center space-x-2 hidden">
+                                <input type="checkbox" class="service-checkbox w-5 h-5 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-2" value="produccion">
+                                <span class="text-sm text-gray-400">Seleccionar</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 2: Grabación -->
+                    <div class="service-card bg-gray-800 p-6 rounded-lg border-2 border-gray-600 hover:border-yellow-400 transition-all cursor-pointer transform hover:scale-105" data-service="grabacion">
+                        <div class="flex flex-col items-center text-center space-y-4">
+                            <div class="text-yellow-400 text-4xl">🎤</div>
+                            <h3 class="text-white font-semibold text-lg">Grabación</h3>
+                            <div class="flex items-center space-x-2 hidden">
+                                <input type="checkbox" class="service-checkbox w-5 h-5 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-2" value="grabacion">
+                                <span class="text-sm text-gray-400">Seleccionar</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servicio 3: Mix/Mastering -->
+                    <div class="service-card bg-gray-800 p-6 rounded-lg border-2 border-gray-600 hover:border-yellow-400 transition-all cursor-pointer transform hover:scale-105" data-service="mixmastering">
+                        <div class="flex flex-col items-center text-center space-y-4">
+                            <div class="text-yellow-400 text-4xl">🎚️</div>
+                            <h3 class="text-white font-semibold text-lg">Mix y Mastering</h3>
+                            <div class="flex items-center space-x-2 hidden">
+                                <input type="checkbox" class="service-checkbox w-5 h-5 text-yellow-500 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500 focus:ring-2" value="mixmastering">
+                                <span class="text-sm text-gray-400">Seleccionar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form Section -->
+            <div id="booking-form-container" class="hidden mt-8 pt-8 border-t border-gray-700">
+                <h2 class="text-2xl font-bold mb-4 text-yellow-400">4. Completa tus datos</h2>
+                <form id="booking-form">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
+                            <input type="text" id="name" required class="w-full bg-gray-800 border-gray-600 rounded-md p-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                            <input type="email" id="email" required class="w-full bg-gray-800 border-gray-600 rounded-md p-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-300 mb-1">Teléfono</label>
+                            <input type="tel" id="phone" required class="w-full bg-gray-800 border-gray-600 rounded-md p-2 focus:ring-yellow-500 focus:border-yellow-500 transition">
+                        </div>
+                        <div class="flex items-end">
+                            <div class="observations-toggle-container flex items-center space-x-3 cursor-pointer p-2" id="observations-toggle-container">
+                                <input type="checkbox" id="toggle-observations" class="sr-only">
+                                <div class="toggle-switch w-12 h-6 bg-gray-600 rounded-full relative transition-colors duration-300">
+                                    <div class="toggle-dot w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-300"></div>
+                                </div>
+                                <span class="text-sm text-gray-300 font-medium">Añadir Observación</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Observations Field -->
+                    <div id="observations-field" class="hidden mt-4 opacity-0 transition-all duration-300">
+                        <label for="observations" class="block text-sm font-medium text-gray-300 mb-1">Observaciones <span class="text-gray-500">(Opcional)</span></label>
+                        <textarea id="observations" rows="3" class="w-full bg-gray-800 border-gray-600 rounded-md p-3 focus:ring-yellow-500 focus:border-yellow-500 transition resize-none" placeholder="Escribe cualquier observación o requerimiento especial para tu sesión..."></textarea>
+                    </div>
+
+                    <div class="mt-6 text-center">
+                        <button type="submit" id="submit-booking" class="bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg hover:bg-yellow-400 transition-all transform hover:scale-105 w-full md:w-auto">
+                            Confirmar Reserva
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Message/Status Area -->
+            <div id="message-area" class="mt-6 text-center"></div>
+
+        </main>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+        <div class="modal-content bg-gray-900 rounded-2xl shadow-2xl max-w-md w-full mx-4 border border-yellow-500/20">
+            <div class="bg-yellow-500 text-black p-6 rounded-t-2xl text-center">
+                <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold">¡Reserva Confirmada!</h3>
+            </div>
+            
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h4 class="text-yellow-400 font-bold mb-3">Detalles de tu reserva:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><span class="text-gray-400">Cliente:</span> <span id="modal-name" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Email:</span> <span id="modal-email" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Teléfono:</span> <span id="modal-phone" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Fecha:</span> <span id="modal-date" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Horario:</span> <span id="modal-time" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Servicios:</span> <span id="modal-services" class="text-white font-medium"></span></div>
+                            <div><span class="text-gray-400">Ubicación:</span> <span id="modal-address" class="text-white text-medium"></span></div>
+                            <div id="modal-observations-container" class="hidden"><span class="text-gray-400">Observaciones:</span> <span id="modal-observations" class="text-white text-medium"></span></div>
+                            <div><span class="text-gray-400">ID:</span> <span id="modal-id" class="text-white text-medium"></span></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <button id="download-pdf" class="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105">
+                        Aceptar y Descargar Reserva
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Footer -->
+    <footer class="text-center mt-12 py-4 space-y-2">
+        <p class="text-sm">
+            © SpinBook, 2025. Desarrollado por <a href="https://beraka.cl/" target="_blank" rel="noopener noreferrer" class="font-semibold">Beraka Studio</a>. <span id="app-version"></span>
+        </p>
+    </footer>
+
+    <!-- Include the main application script -->
+    <script src="src/script-sb.js"></script>
+</body>
+</html>

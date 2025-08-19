@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpinBook Admin - Panel de Administración</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-sidebar {
+            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+        }
+        .admin-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(250, 204, 21, 0.2);
+        }
+        .admin-input:focus {
+            border-color: #facc15;
+            box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.1);
+        }
+        .loading-spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #facc15;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-yellow-200">
+        <div class="flex items-center justify-between px-6 py-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-yellow-400 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-music text-black text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-800">SpinBook Admin</h1>
+                    <p class="text-sm text-gray-600">Panel de Administración</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="save-all-btn" class="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-save mr-2"></i>Guardar Cambios
+                </button>
+                <a href="/" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i class="fas fa-eye mr-2"></i>Ver Sitio
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <nav class="admin-sidebar w-64 min-h-screen p-6">
+            <ul class="space-y-2">
+                <li>
+                    <button class="nav-btn w-full text-left px-4 py-3 text-white hover:bg-yellow-500 hover:text-black rounded-lg transition-colors active" data-section="studio-config">
+                        <i class="fas fa-building mr-3"></i>Configuración del Estudio
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn w-full text-left px-4 py-3 text-white hover:bg-yellow-500 hover:text-black rounded-lg transition-colors" data-section="services-config">
+                        <i class="fas fa-cog mr-3"></i>Servicios
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn w-full text-left px-4 py-3 text-white hover:bg-yellow-500 hover:text-black rounded-lg transition-colors" data-section="schedule-config">
+                        <i class="fas fa-clock mr-3"></i>Horarios
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn w-full text-left px-4 py-3 text-white hover:bg-yellow-500 hover:text-black rounded-lg transition-colors" data-section="bookings-view">
+                        <i class="fas fa-calendar mr-3"></i>Reservas
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-btn w-full text-left px-4 py-3 text-white hover:bg-yellow-500 hover:text-black rounded-lg transition-colors" data-section="telegram-config">
+                        <i class="fab fa-telegram mr-3"></i>Telegram
+                    </button>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Configuración del Estudio -->
+            <div id="studio-config" class="admin-section">
+                <div class="admin-card rounded-xl p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-building text-yellow-500 mr-3"></i>Configuración del Estudio
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Estudio</label>
+                            <input type="text" id="studio-name" class="admin-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-colors" placeholder="Ej: Beraka Studio - SpinBook">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                            <input type="text" id="studio-address" class="admin-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-colors" placeholder="Ej: Av. Principal 123, Santiago">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email de Contacto</label>
+                            <input type="email" id="studio-email" class="admin-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-colors" placeholder="contacto@estudio.com">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                            <input type="text" id="studio-phone" class="admin-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-colors" placeholder="+56 9 1234 5678">
+                        </div>
+                        
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Logo/Icono (URL)</label>
+                            <div class="flex space-x-4">
+                                <input type="text" id="studio-logo" class="admin-input flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none transition-colors" placeholder="src/icon.png">
+                                <img id="logo-preview" src="" alt="Logo Preview" class="w-16 h-16 rounded-lg border-2 border-gray-200 object-cover hidden">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Servicios -->
+            <div id="services-config" class="admin-section hidden">
+                <div class="admin-card rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-cog text-yellow-500 mr-3"></i>Servicios Disponibles
+                        </h2>
+                        <button id="add-service-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Agregar Servicio
+                        </button>
+                    </div>
+                    
+                    <div id="services-list" class="space-y-4">
+                        <!-- Services will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Horarios -->
+            <div id="schedule-config" class="admin-section hidden">
+                <div class="admin-card rounded-xl p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-clock text-yellow-500 mr-3"></i>Horarios Disponibles
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Horarios de Atención</label>
+                            <div class="space-y-2" id="available-hours">
+                                <!-- Hours checkboxes will be generated here -->
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Días de Trabajo</label>
+                            <div class="space-y-2" id="working-days">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="1" checked>
+                                    <span>Lunes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="2" checked>
+                                    <span>Martes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="3" checked>
+                                    <span>Miércoles</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="4" checked>
+                                    <span>Jueves</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="5" checked>
+                                    <span>Viernes</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="6">
+                                    <span>Sábado</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="day-checkbox mr-3" value="0">
+                                    <span>Domingo</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vista de Reservas -->
+            <div id="bookings-view" class="admin-section hidden">
+                <div class="admin-card rounded-xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            <i class="fas fa-calendar text-yellow-500 mr-3"></i>Reservas Actuales
+                        </h2>
+                        <button id="refresh-bookings-btn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-sync mr-2"></i>Actualizar
+                        </button>
+                    </div>
+                    
+                    <div id="bookings-list" class="space-y-4">
+                        <div class="text-center py-8">
+                            <div class="loading-spinner mx-auto mb-4"></div>
+                            <p class="text-gray-600">Cargando reservas...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de Telegram -->
+            <div id="telegram-config" class="admin-section hidden">
+                <div class="admin-card rounded-xl p-6 shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                        <i class="fab fa-telegram text-yellow-500 mr-3"></i>Configuración de Telegram
+                    </h2>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mr-3 mt-1"></i>
+                            <div>
+                                <h3 class="font-medium text-blue-800">Configuración Segura</h3>
+                                <p class="text-sm text-blue-700 mt-1">
+                                    Los datos sensibles como el Bot Token y Chat ID se configuran en las variables de entorno de Vercel por seguridad.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="telegram-enabled" class="mr-3" checked>
+                                <span class="font-medium text-gray-700">Habilitar notificaciones de Telegram</span>
+                            </label>
+                            <p class="text-sm text-gray-600 mt-1 ml-6">
+                                Recibir notificaciones automáticas cuando se genere una nueva reserva.
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-800 mb-2">Estado de la Configuración</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <span class="text-sm text-gray-700">Bot Token configurado</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                    <span class="text-sm text-gray-700">Chat ID configurado</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button id="test-telegram-btn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                            <i class="fas fa-paper-plane mr-2"></i>Enviar Mensaje de Prueba
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Success Message -->
+    <div id="success-message" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+        <i class="fas fa-check mr-2"></i>
+        <span>Configuración guardada exitosamente</span>
+    </div>
+
+    <script>
+        // Configuración por defecto (simulando lo que viene del backend)
+        let adminConfig = {
+            studio: {
+                name: 'Beraka Studio - SpinBook',
+                logo: 'src/icon.png',
+                address: 'Temuco, Araucanía, Chile',
+                email: 'contacto@berakastudio.com',
+                phone: '+56 9 1234 5678'
+            },
+            services: {
+                'produccion': 'Producción Musical',
+                'grabacion': 'Grabación de Voces/Instrumentos',
+                'mixmastering': 'Mix/Mastering'
+            },
+            schedule: {
+                availableHours: [17, 18, 19, 20, 21],
+                workingDays: [1, 2, 3, 4, 5] // Lunes a Viernes
+            },
+            telegram: {
+                enabled: true
+            }
+        };
+
+        // Simulación de reservas (normalmente vendría del backend)
+        const mockBookings = [
+            {
+                id: 'SB-ABC123',
+                date: '2025-08-20',
+                slots: [17, 18],
+                services: ['grabacion'],
+                userData: {
+                    name: 'Juan Pérez',
+                    email: 'juan@email.com',
+                    phone: '+56 9 8765 4321'
+                },
+                status: 'confirmed'
+            },
+            {
+                id: 'SB-DEF456',
+                date: '2025-08-22',
+                slots: [19],
+                services: ['mixmastering'],
+                userData: {
+                    name: 'María González',
+                    email: 'maria@email.com',
+                    phone: '+56 9 1111 2222'
+                },
+                status: 'confirmed'
+            }
+        ];
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active button
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'bg-yellow-500', 'text-black'));
+                btn.classList.add('active', 'bg-yellow-500', 'text-black');
+
+                // Show corresponding section
+                const section = btn.dataset.section;
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+                document.getElementById(section).classList.remove('hidden');
+
+                // Load section-specific data
+                if (section === 'bookings-view') {
+                    loadBookings();
+                }
+            });
+        });
+
+        // Initialize form fields
+        function initializeFields() {
+            // Studio configuration
+            document.getElementById('studio-name').value = adminConfig.studio.name;
+            document.getElementById('studio-address').value = adminConfig.studio.address;
+            document.getElementById('studio-email').value = adminConfig.studio.email;
+            document.getElementById('studio-phone').value = adminConfig.studio.phone;
+            document.getElementById('studio-logo').value = adminConfig.studio.logo;
+            updateLogoPreview();
+
+            // Services
+            renderServices();
+
+            // Schedule
+            renderSchedule();
+
+            // Telegram
+            document.getElementById('telegram-enabled').checked = adminConfig.telegram.enabled;
+        }
+
+        // Logo preview
+        function updateLogoPreview() {
+            const logoUrl = document.getElementById('studio-logo').value;
+            const preview = document.getElementById('logo-preview');
+            
+            if (logoUrl) {
+                preview.src = logoUrl;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('studio-logo').addEventListener('input', updateLogoPreview);
+
+        // Services management
+        function renderServices() {
+            const container = document.getElementById('services-list');
+            container.innerHTML = '';
+
+            Object.entries(adminConfig.services).forEach(([key, name]) => {
+                const serviceEl = document.createElement('div');
+                serviceEl.className = 'flex items-center space-x-4 p-4 border border-gray-200 rounded-lg';
+                serviceEl.innerHTML = `
+                    <input type="text" value="${key}" class="service-key flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-yellow-500" readonly>
+                    <input type="text" value="${name}" class="service-name flex-2 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-yellow-500">
+                    <button class="delete-service bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded transition-colors" data-key="${key}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                container.appendChild(serviceEl);
+            });
+
+            // Add event listeners for delete buttons
+            document.querySelectorAll('.delete-service').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.key;
+                    delete adminConfig.services[key];
+                    renderServices();
+                });
+            });
+        }
+
+        // Add new service
+        document.getElementById('add-service-btn').addEventListener('click', () => {
+            const key = prompt('Clave del servicio (sin espacios):');
+            const name = prompt('Nombre del servicio:');
+            
+            if (key && name) {
+                adminConfig.services[key] = name;
+                renderServices();
+            }
+        });
+
+        // Schedule management
+        function renderSchedule() {
+            const hoursContainer = document.getElementById('available-hours');
+            hoursContainer.innerHTML = '';
+
+            for (let hour = 8; hour <= 22; hour++) {
+                const isChecked = adminConfig.schedule.availableHours.includes(hour);
+                const hourEl = document.createElement('label');
+                hourEl.className = 'flex items-center';
+                hourEl.innerHTML = `
+                    <input type="checkbox" class="hour-checkbox mr-3" value="${hour}" ${isChecked ? 'checked' : ''}>
+                    <span>${hour}:00 - ${hour + 1}:00</span>
+                `;
+                hoursContainer.appendChild(hourEl);
+            }
+
+            // Update working days
+            document.querySelectorAll('.day-checkbox').forEach(checkbox => {
+                const dayValue = parseInt(checkbox.value);
+                checkbox.checked = adminConfig.schedule.workingDays.includes(dayValue);
+            });
+        }
+
+        // Load and display bookings
+        function loadBookings() {
+            const container = document.getElementById('bookings-list');
+            container.innerHTML = '';
+
+            if (mockBookings.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-times text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-600">No hay reservas actualmente</p>
+                    </div>
+                `;
+                return;
+            }
+
+            mockBookings.forEach(booking => {
+                const bookingEl = document.createElement('div');
+                bookingEl.className = 'border border-gray-200 rounded-lg p-4';
+                
+                const services = booking.services.map(s => adminConfig.services[s]).join(', ');
+                const timeSlots = booking.slots.map(h => `${h}:00-${h+1}:00`).join(', ');
+                
+                bookingEl.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-gray-800">${booking.userData.name}</h3>
+                            <p class="text-sm text-gray-600">${booking.userData.email} • ${booking.userData.phone}</p>
+                            <p class="text-sm text-gray-700 mt-1">
+                                <i class="fas fa-calendar mr-1"></i>${booking.date} • ${timeSlots}
+                            </p>
+                            <p class="text-sm text-gray-700">
+                                <i class="fas fa-cog mr-1"></i>${services}
+                            </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                                ${booking.status === 'confirmed' ? 'Confirmada' : 'Pendiente'}
+                            </span>
+                            <button class="text-red-600 hover:text-red-800 p-2" onclick="cancelBooking('${booking.id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(bookingEl);
+            });
+        }
+
+        // Cancel booking
+        function cancelBooking(bookingId) {
+            if (confirm('¿Estás seguro de que quieres cancelar esta reserva?')) {
+                // Aquí iría la lógica para cancelar en el backend
+                console.log('Cancelando reserva:', bookingId);
+                showSuccessMessage('Reserva cancelada exitosamente');
+            }
+        }
+
+        // Save all configuration
+        document.getElementById('save-all-btn').addEventListener('click', () => {
+            // Collect studio data
+            adminConfig.studio.name = document.getElementById('studio-name').value;
+            adminConfig.studio.address = document.getElementById('studio-address').value;
+            adminConfig.studio.email = document.getElementById('studio-email').value;
+            adminConfig.studio.phone = document.getElementById('studio-phone').value;
+            adminConfig.studio.logo = document.getElementById('studio-logo').value;
+
+            // Collect services data
+            document.querySelectorAll('.service-name').forEach(input => {
+                const key = input.parentElement.querySelector('.service-key').value;
+                adminConfig.services[key] = input.value;
+            });
+
+            // Collect schedule data
+            adminConfig.schedule.availableHours = [];
+            document.querySelectorAll('.hour-checkbox:checked').forEach(checkbox => {
+                adminConfig.schedule.availableHours.push(parseInt(checkbox.value));
+            });
+
+            adminConfig.schedule.workingDays = [];
+            document.querySelectorAll('.day-checkbox:checked').forEach(checkbox => {
+                adminConfig.schedule.workingDays.push(parseInt(checkbox.value));
+            });
+
+            // Collect telegram data
+            adminConfig.telegram.enabled = document.getElementById('telegram-enabled').checked;
+
+            // Simulate save to backend
+            console.log('Guardando configuración:', adminConfig);
+            
+            // Here you would send to your backend API
+            // await fetch('/api/admin/save-config', { method: 'POST', body: JSON.stringify(adminConfig) });
+            
+            showSuccessMessage('Configuración guardada exitosamente');
+        });
+
+        // Test Telegram
+        document.getElementById('test-telegram-btn').addEventListener('click', async () => {
+            // Simulate test message
+            console.log('Enviando mensaje de prueba a Telegram...');
+            showSuccessMessage('Mensaje de prueba enviado a Telegram');
+        });
+
+        // Refresh bookings
+        document.getElementById('refresh-bookings-btn').addEventListener('click', () => {
+            loadBookings();
+            showSuccessMessage('Reservas actualizadas');
+        });
+
+        // Show success message
+        function showSuccessMessage(message) {
+            const messageEl = document.getElementById('success-message');
+            messageEl.querySelector('span').textContent = message;
+            messageEl.classList.remove('translate-x-full');
+            
+            setTimeout(() => {
+                messageEl.classList.add('translate-x-full');
+            }, 3000);
+        }
+
+        // Initialize the admin panel
+        initializeFields();
+    </script>
+</body>
+</html>
