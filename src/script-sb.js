@@ -1,16 +1,22 @@
-// script-sb.js - SpinBook Main Application Script
+// script-sb.js - SpinBook Main Application Script with Admin Panel Integration
 // © José Lobos Sanhueza, Beraka Studio, 2025
 
 document.addEventListener('DOMContentLoaded', function() {
-    // --- CONFIGURACIÓN DEL ESTUDIO (Variable modificable) ---
-    const STUDIO_CONFIG = {
-        name: 'Nombre Estudio - SpinBook', //AGREGA NOMBRE DEL ESTUDIO/PRODUCTOR ANTES DEL GUION
-        logo: 'src/icon.png', // AGREGA LA RUTA DEL LOGO/ICONO DEL ESTUDIO
-        address: 'Dirección Estudio', // AGREGA LA DIRECCIÓN DEL ESTUDIO/PRODUCTOR
+    // --- CONFIGURACIÓN DINÁMICA (CARGADA DESDE API) ---
+    let STUDIO_CONFIG = {
+        name: 'SpinBook - Cargando...',
+        logo: 'src/icon.png',
+        address: 'Cargando dirección...',
         contact: {
-            email: 'nombre@direccion.mail', // AGREGA EL EMAIL DEL ESTUDIO/PRODUCTOR
-            phone: '+56 0 1234 5678' // AGREGA EL TELÉFONO DEL ESTUDIO/PRODUCTOR
+            email: 'cargando@email.com',
+            phone: '+56 9 0000 0000'
         }
+    };
+
+    let AVAILABLE_SERVICES = {
+        'produccion': 'Producción Musical',
+        'grabacion': 'Grabación',
+        'mixmastering': 'Mix/Mastering'
     };
 
     // --- CONFIGURACIÓN DE NOTIFICACIONES TELEGRAM (MOVIDA AL BACKEND) ---
@@ -19,12 +25,69 @@ document.addEventListener('DOMContentLoaded', function() {
         enabled: true, // Se puede mantener aquí para controlar si mostrar opciones de Telegram en el UI
     };
 
-    // --- SERVICIOS DISPONIBLES ---
-    const AVAILABLE_SERVICES = {
-        'produccion': 'Producción Musical',
-        'grabacion': 'Grabación de Voces/Instrumentos',
-        'mixmastering': 'Mix/Mastering'
-    };
+    let availableHours = [17, 18, 19, 20, 21]; // Cambiado de const a let para hacerlo dinámico
+
+    // --- FUNCIÓN PARA CARGAR CONFIGURACIÓN DESDE API ---
+    async function loadConfiguration() {
+        try {
+            console.log('🔄 Cargando configuración del estudio desde API...');
+            
+            const response = await fetch('/api/admin/get-config');
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            
+            const config = await response.json();
+            
+            // Actualizar variables globales con datos de la API
+            STUDIO_CONFIG = {
+                name: config.studio.name || 'SpinBook Studio',
+                logo: config.studio.logo || 'src/icon.png',
+                address: config.studio.address || 'Dirección no configurada',
+                contact: {
+                    email: config.studio.email || 'contacto@estudio.com',
+                    phone: config.studio.phone || '+56 9 0000 0000'
+                }
+            };
+            
+            // Actualizar servicios disponibles
+            AVAILABLE_SERVICES = config.services || {
+                'produccion': 'Producción Musical',
+                'grabacion': 'Grabación de Voces/Instrumentos',
+                'mixmastering': 'Mix/Mastering'
+            };
+            
+            // Actualizar horarios disponibles
+            availableHours = config.schedule?.availableHours || [17, 18, 19, 20, 21];
+            
+            console.log('✅ Configuración cargada exitosamente:', {
+                studioName: STUDIO_CONFIG.name,
+                servicesCount: Object.keys(AVAILABLE_SERVICES).length,
+                hoursCount: availableHours.length,
+                telegramEnabled: config.telegram?.enabled || false
+            });
+            
+            return config;
+            
+        } catch (error) {
+            console.error('❌ Error cargando configuración desde API:', error);
+            console.warn('⚠️ Usando configuración por defecto (fallback)');
+            
+            // Mantener configuración por defecto en caso de error
+            STUDIO_CONFIG = {
+                name: 'SpinBook Studio',
+                logo: 'src/icon.png',
+                address: 'Configurar dirección en Admin',
+                contact: {
+                    email: 'configurar@admin.com',
+                    phone: '+56 9 0000 0000'
+                }
+            };
+            
+            // Servicios y horarios por defecto ya están configurados arriba
+            return null;
+        }
+    }
 
     // --- FUNCIÓN PARA OBTENER VERSIÓN DESDE PACKAGE.JSON ---
     async function getAppVersion() {
@@ -40,25 +103,134 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- FUNCIÓN PARA INICIALIZAR ELEMENTOS DINÁMICOS ---
     async function initializeDynamicElements() {
+        // PRIMERO: Cargar configuración desde la API
+        await loadConfiguration();
+        
+        // SEGUNDO: Actualizar elementos del DOM con la configuración cargada
+        
         // Actualizar logo
         const logoElement = document.getElementById('studio-logo');
         if (logoElement) {
             logoElement.src = STUDIO_CONFIG.logo;
             logoElement.alt = `${STUDIO_CONFIG.name} Logo`;
+            
+            // Agregar evento de error para logo
+            logoElement.onerror = function() {
+                console.warn('⚠️ Error cargando logo, usando icono por defecto');
+                this.src = 'src/icon.png';
+            };
         }
 
-        // Actualizar título
+        // Actualizar título del estudio
         const titleElement = document.getElementById('studio-title');
         if (titleElement) {
             titleElement.textContent = STUDIO_CONFIG.name;
         }
 
-        // Actualizar versión desde package.json
+        // Actualizar versión desde package.json (mantener funcionalidad existente)
         const version = await getAppVersion();
         const versionElement = document.getElementById('app-version');
         if (versionElement) {
             versionElement.textContent = `Version ${version}`;
         }
+        
+        // NUEVO: Actualizar elementos adicionales si existen
+        const addressElements = document.querySelectorAll('.studio-address');
+        addressElements.forEach(element => {
+            element.textContent = STUDIO_CONFIG.address;
+        });
+        
+        const emailElements = document.querySelectorAll('.studio-email');
+        emailElements.forEach(element => {
+            element.textContent = STUDIO_CONFIG.contact.email;
+        });
+        
+        const phoneElements = document.querySelectorAll('.studio-phone');
+        phoneElements.forEach(element => {
+            element.textContent = STUDIO_CONFIG.contact.phone;
+        });
+        
+        console.log('🎨 Elementos dinámicos inicializados con configuración de API');
+    }
+
+    // --- FUNCIÓN PARA RECARGAR CONFIGURACIÓN EN TIEMPO REAL ---
+    async function reloadConfiguration() {
+        try {
+            console.log('🔄 Recargando configuración...');
+            
+            // Cargar nueva configuración desde API
+            const newConfig = await loadConfiguration();
+            
+            if (newConfig) {
+                // Re-inicializar elementos que dependan de la configuración
+                await initializeDynamicElements();
+                
+                // Re-renderizar servicios si la sección está visible
+                if (servicesContainer && !servicesContainer.classList.contains('hidden')) {
+                    updateServiceSelection();
+                }
+                
+                // Re-renderizar horarios si hay una fecha seleccionada
+                if (selectedDate) {
+                    renderTimeSlots(currentBusySlots);
+                }
+                
+                console.log('✅ Configuración recargada y aplicada exitosamente');
+                
+                // Mostrar mensaje temporal de éxito (opcional)
+                displayMessage('Configuración actualizada desde el panel de admin', 'success');
+            }
+            
+        } catch (error) {
+            console.error('❌ Error recargando configuración:', error);
+            displayMessage('Error al recargar configuración', 'error');
+        }
+    }
+
+    // --- FUNCIÓN OPCIONAL: DETECTAR CAMBIOS DE CONFIGURACIÓN ---
+    function startConfigurationWatcher() {
+        // Recargar configuración cada 5 minutos para detectar cambios desde admin
+        const watcherInterval = setInterval(() => {
+            reloadConfiguration();
+        }, 300000); // 5 minutos
+        
+        console.log('👁️ Observador de configuración iniciado (recarga cada 5 min)');
+        
+        // Devolver el interval para poder cancelarlo si es necesario
+        return watcherInterval;
+    }
+
+    // --- FUNCIÓN PARA AGREGAR BOTÓN DE ADMIN (OPCIONAL) ---
+    function addAdminButton() {
+        // Solo agregar en desarrollo o en Vercel
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname.includes('127.0.0.1') ||
+                             window.location.hostname.includes('vercel.app');
+        
+        if (!isDevelopment) return;
+        
+        // Verificar si ya existe el botón
+        if (document.getElementById('admin-access-btn')) return;
+        
+        const adminBtn = document.createElement('a');
+        adminBtn.id = 'admin-access-btn';
+        adminBtn.href = '/admin.html';
+        adminBtn.target = '_blank';
+        adminBtn.innerHTML = '<i class="fas fa-cog"></i>';
+        adminBtn.className = 'fixed bottom-4 right-4 bg-yellow-500 text-black p-3 rounded-full shadow-lg hover:bg-yellow-600 transition-all duration-200 z-50 hover:scale-110';
+        adminBtn.title = 'Abrir Panel de Administración';
+        adminBtn.style.cssText = `
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            text-decoration: none;
+            font-size: 18px;
+        `;
+        
+        document.body.appendChild(adminBtn);
+        console.log('🔧 Botón de acceso al admin agregado');
     }
 
     // --- STATE MANAGEMENT ---
@@ -98,8 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Modal elements
     const successModal = document.getElementById('success-modal');
     const downloadPdfBtn = document.getElementById('download-pdf');
-
-    const availableHours = [17, 18, 19, 20, 21];
 
     // --- UTILITY FUNCTIONS ---
     // Formatear fecha correctamente evitando problemas de timezone
@@ -543,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal-time').textContent = slots.map(h => `${h}:00-${h+1}:00`).join(', ');
         
         // Mostrar servicios seleccionados
-        const serviceNames = services.map(service => AVAILABLE_SERVICES[service]).join(', ');
+        const serviceNames = services.map(service => AVAILABLE_SERVICES[service] || service).join(', ');
         document.getElementById('modal-services').textContent = serviceNames;
         
         // Mostrar observaciones si existen
@@ -560,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('modal-id').textContent = eventId;
         
         // Agregar dirección del estudio en el modal
-        document.getElementById('modal-address').textContent = STUDIO_CONFIG.address;
+        document.getElementById('modal-address').textContent = STUDIO_CONFIG.address || 'Dirección no configurada';
         
         // Show modal
         successModal.classList.remove('hidden');
@@ -676,7 +846,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.warn('Could not load icon.png, continuing without logo');
                     completePDFGeneration();
                 };
-                img.src = STUDIO_CONFIG.logo;
+                // Verificar que el logo esté configurado y sea válido
+                const logoSrc = STUDIO_CONFIG.logo && STUDIO_CONFIG.logo !== 'src/icon.png' ? STUDIO_CONFIG.logo : 'src/icon.png';
+                img.src = logoSrc;
             } catch (error) {
                 console.warn('Error loading icon:', error);
                 completePDFGeneration();
@@ -726,7 +898,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const timeSlots = slots.map(hour => `${hour}:00-${hour+1}:00`).join(', ');
                 
                 // Formatear servicios para PDF
-                const serviceNames = services.map(service => AVAILABLE_SERVICES[service]).join(', ');
+                const serviceNames = services.map(service => AVAILABLE_SERVICES[service] || service).join(', ');
 
                 const details = [
                     { label: 'Cliente:', value: userData.name },
@@ -735,7 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { label: 'Fecha:', value: formattedDate },
                     { label: 'Horario:', value: timeSlots },
                     { label: 'Servicios:', value: serviceNames }, // NUEVO: Servicios en PDF
-                    { label: 'Ubicación:', value: STUDIO_CONFIG.address }, 
+                    { label: 'Ubicación:', value: STUDIO_CONFIG.address || 'Dirección no configurada' }, 
                     { label: 'ID de Reserva:', value: eventId }
                 ];
 
@@ -785,7 +957,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     '• Presenta este ticket al llegar al estudio',
                     `• Dirígete a: ${STUDIO_CONFIG.address}`,
                     '• Para cancelar, avisa con 24 horas de anticipación',
-                    ...(STUDIO_CONFIG.contact.phone ? [`• Contacto: ${STUDIO_CONFIG.contact.phone}`] : []),
+                    ...(STUDIO_CONFIG.contact.phone && STUDIO_CONFIG.contact.phone !== '+56 9 0000 0000' ? [`• Contacto: ${STUDIO_CONFIG.contact.phone}`] : []),
                     `• Email: ${STUDIO_CONFIG.contact.email}`
                 ];
 
@@ -887,8 +1059,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- INITIALIZATION ---
-    // Inicializar elementos dinámicos primero
+    // Inicializar elementos dinámicos con configuración de API
     initializeDynamicElements().then(() => {
+        // Renderizar calendario y slots
         renderCalendar();
         renderTimeSlots();
         
@@ -896,14 +1069,23 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeServiceSelection();
         initializeObservationsToggle();
         
-        console.log('🎵 SpinBook initialized with secure Telegram notifications');
-        console.log('Telegram notifications handled securely by backend ✅');
+        // NUEVO: Iniciar observador de configuración (opcional)
+        // const configWatcher = startConfigurationWatcher();
+        
+        // NUEVO: Agregar botón de admin en desarrollo
+        addAdminButton();
+        
+        console.log('🎵 SpinBook initialized with dynamic configuration system');
+        console.log('✅ Configuration loaded from API successfully');
         console.log('🔧 Dynamic elements initialized:', {
             studioName: STUDIO_CONFIG.name,
             studioLogo: STUDIO_CONFIG.logo,
-            studioAddress: STUDIO_CONFIG.address
+            studioAddress: STUDIO_CONFIG.address,
+            servicesCount: Object.keys(AVAILABLE_SERVICES).length,
+            availableHours: availableHours.length
         });
-        console.log('🎯 New features initialized: Services selection & Observations toggle');
+        console.log('🎯 Features initialized: Services selection, Observations toggle, Admin integration');
+        console.log('📡 Backend: Secure Telegram notifications, Dynamic configuration API');
         
         // Verificar disponibilidad de jsPDF al inicializar
         const jsPDFConstructor = checkJsPDFAvailability();
@@ -912,5 +1094,18 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             console.warn('⚠️ jsPDF library not found - PDF generation may not work');
         }
+        
+    }).catch(error => {
+        console.error('❌ Error durante la inicialización:', error);
+        
+        // Fallback: inicializar sin configuración API
+        console.warn('⚠️ Iniciando con configuración por defecto debido a error');
+        
+        renderCalendar();
+        renderTimeSlots();
+        initializeServiceSelection();
+        initializeObservationsToggle();
+        
+        displayMessage('Modo sin conexión: usando configuración por defecto', 'error');
     });
 });
